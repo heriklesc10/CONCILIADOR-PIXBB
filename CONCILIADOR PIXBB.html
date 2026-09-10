@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conciliador Pix CSV</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --ink: #182230;
+      --muted: #667085;
+      --line: #d0d7e2;
+      --soft: #eef2f6;
+      --accent: #006c67;
+      --accent-dark: #00524e;
+      --bad: #b42318;
+      --good: #067647;
+      --warn: #b54708;
+      --return: #7a4b00;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+      padding: 18px 24px;
+    }
+
+    .topbar {
+      max-width: 1360px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    main {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(340px, 420px) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 3px 9px;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      margin: 10px 0 5px;
+      color: #344054;
+    }
+
+    input, select, button {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font: inherit;
+      background: #fff;
+    }
+
+    input[type="file"] {
+      padding: 7px;
+      background: #fbfcfd;
+    }
+
+    button {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover { background: var(--accent-dark); }
+
+    button.secondary {
+      background: #fff;
+      color: var(--accent);
+    }
+
+    button.secondary:hover { background: #eef8f7; }
+
+    button.return {
+      border-color: var(--return);
+      background: #fff8e8;
+      color: var(--return);
+    }
+
+    button.return:hover { background: #ffe9b5; }
+
+    .file-summary {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfd;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .file-summary strong {
+      color: #344054;
+    }
+
+    .settings {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      align-items: end;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1;
+      margin-bottom: 5px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tabs button {
+      width: auto;
+      min-height: 34px;
+      padding: 6px 12px;
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .tabs button.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .table-wrap {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: auto;
+      max-height: 590px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 1160px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #e9eef5;
+      z-index: 1;
+      color: #344054;
+      font-size: 12px;
+    }
+
+    .status-ok, .status-bad, .status-warn { font-weight: 700; }
+    .status-ok { color: var(--good); }
+    .status-bad { color: var(--bad); }
+    .status-warn { color: var(--warn); }
+
+    .hint {
+      margin-top: 9px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1100px) {
+      .layout, .summary, .actions { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      main, header { padding: 14px; }
+      .settings { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>Conciliador Pix CSV</h1>
+        <p>Extrato Pix x cupom, com retorno das vendas nao conciliadas por filial, cupom e PDV.</p>
+      </div>
+      <span class="badge">CSV local</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="layout">
+      <aside class="stack">
+        <section class="panel">
+          <div class="section-title">
+            <h2>Extrato Pix</h2>
+            <span class="badge" id="pixInfo">0 linhas</span>
+          </div>
+          <input id="pixFile" type="file" accept=".csv,text/csv">
+          <div class="file-summary" id="pixMapInfo">
+            <span><strong>Configuracao:</strong> data, valor Pix, identificador e filial serao detectados automaticamente.</span>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="section-title">
+            <h2>Arquivo Vendas (ERP)</h2>
+            <span class="badge" id="cupomInfo">0 linhas</span>
+          </div>
+          <input id="cupomFile" type="file" accept=".csv,text/csv">
+          <div class="file-summary" id="cupomMapInfo">
+            <span><strong>Configuracao:</strong> data da venda, valor ERP, cupom, filial e PDV serao detectados automaticamente.</span>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Regras</h2>
+          <div class="settings">
+            <div>
+              <label for="dateTolerance">Dias</label>
+              <input id="dateTolerance" type="number" min="0" step="1" value="1">
+            </div>
+            <div>
+              <label for="valueTolerance">Valor</label>
+              <input id="valueTolerance" type="number" min="0" step="0.01" value="0.00">
+            </div>
+            <div>
+              <label for="delimiter">Separador</label>
+              <select id="delimiter">
+                <option value="auto">Detectar</option>
+                <option value=";">Ponto e virgula (;)</option>
+                <option value=",">Virgula (,)</option>
+              </select>
+            </div>
+          </div>
+          <label style="display:flex; align-items:center; gap:8px; margin-top:12px;">
+            <input id="strictBranch" type="checkbox" style="width:16px; min-height:16px;" checked>
+            <span style="font-size:12px; font-weight:700; color:#344054;">Exigir mesma loja/filial no match</span>
+          </label>
+          <button id="reconcileBtn" style="margin-top:12px">Conciliar arquivos</button>
+          <p class="hint">A conciliacao usa valor, data dentro da tolerancia e (quando disponivel) a mesma loja/filial. Identificador parecido e prioridade maxima; entre candidatos igualmente bons, o par mais proximo em valor e data e o escolhido primeiro.</p>
+        </section>
+      </aside>
+
+      <section class="stack">
+        <div class="summary">
+          <div class="metric"><strong id="mMatched">0</strong><span>Conciliados</span></div>
+          <div class="metric"><strong id="mPixOnly">0</strong><span>Pix sem cupom</span></div>
+          <div class="metric"><strong id="mCupomOnly">0</strong><span>Cupom sem Pix</span></div>
+          <div class="metric"><strong id="mDiff">0</strong><span>Diferencas</span></div>
+        </div>
+
+        <div class="panel">
+          <div class="section-title">
+            <h2>Arquivos de saida</h2>
+            <span class="badge">Exportacao CSV</span>
+          </div>
+          <div class="actions">
+            <button class="secondary" data-export="matched">Conciliados</button>
+            <button class="secondary" data-export="pixOnly">Pix sem cupom</button>
+            <button class="secondary" data-export="cupomOnly">Cupom sem Pix</button>
+            <button class="secondary" data-export="all">Tudo</button>
+            <button class="return" data-export="returnFile">Arquivo retorno</button>
+          </div>
+          <p class="hint">O arquivo retorno contem apenas as vendas de cupom nao conciliadas, com filial, cupom, PDV, data, valor e motivo.</p>
+        </div>
+
+        <div class="tabs">
+          <button class="active" data-tab="matched">Conciliados</button>
+          <button data-tab="pixOnly">Pix sem cupom</button>
+          <button data-tab="cupomOnly">Cupom sem Pix</button>
+          <button data-tab="returnFile">Retorno</button>
+          <button data-tab="all">Tudo</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead id="resultHead"></thead>
+            <tbody id="resultBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const state = {
+      pix: { rows: [], headers: [] },
+      cupom: { rows: [], headers: [] },
+      results: { matched: [], pixOnly: [], cupomOnly: [], returnFile: [], all: [] },
+      tab: 'matched'
+    };
+
+    const els = {
+      pixFile: document.getElementById('pixFile'),
+      cupomFile: document.getElementById('cupomFile'),
+      delimiter: document.getElementById('delimiter'),
+      reconcileBtn: document.getElementById('reconcileBtn'),
+      resultHead: document.getElementById('resultHead'),
+      resultBody: document.getElementById('resultBody')
+    };
+
+    const tableHeaders = ['status', 'lojaCupom', 'filialCupom', 'pdvVenda', 'cupomId', 'cupomData', 'cupomValor', 'pixData', 'pixValor', 'pixId', 'diferencaValor', 'diferencaDias'];
+    const pixOnlyHeaders = ['status', 'lojaCupom', 'filialCupom', 'pixData', 'pixValor', 'pixId'];
+    const cupomOnlyHeaders = ['status', 'lojaCupom', 'filialCupom', 'cupomId', 'pdvVenda', 'cupomData', 'cupomValor'];
+    const returnHeaders = ['lojaCupom', 'filialCupom', 'cupomId', 'pdvVenda', 'cupomData', 'cupomValor', 'motivo'];
+    const storeToBranch = Object.freeze({"015":"1","024":"2","016":"3","018":"4","019":"5","021":"6","022":"7","017":"8","026":"9","023":"10","025":"11","020":"12","033":"13","027":"14","028":"15","029":"16","030":"17","031":"18","032":"19","901":"20","036":"21","034":"22","035":"23","037":"24","038":"25","040":"26","039":"27","041":"28","042":"29","043":"30","044":"31","045":"32","046":"33","047":"34","048":"35","049":"36","050":"37","051":"38","080":"39","082":"40","081":"41","064":"42","073":"43","072":"44","083":"45","066":"46","065":"47","117":"48","160":"49","163":"50","161":"51","085":"52","088":"53","087":"55","084":"56","143":"57","141":"58","145":"59","144":"60","076":"61","077":"62","074":"63","164":"64","123":"65","147":"66","149":"67","142":"68","148":"69","ado":"70","151":"71","075":"72","165":"73","162":"74","191":"75","078":"76","152":"77","158":"78","168":"79","166":"80","167":"81","176":"82","171":"83","079":"84","089":"85","150":"86","193":"87","170":"88","178":"89","177":"90","174":"91","172":"92","175":"93","090":"94","156":"95","157":"96","091":"97","180":"98","179":"99","173":"100","182":"101","186":"102","093":"103","092":"104","094":"105","095":"106","187":"107","184":"108","181":"109","lar":"110","189":"111","188":"112","183":"113","169":"114","205":"115","214":"116","213":"117","212":"118","211":"119","210":"120","207":"121","208":"122","204":"123","203":"124","202":"125","221":"126","300":"127","209":"128","236":"129","319":"130","218":"131","305":"132","314":"133","316":"134","320":"135","304":"136","313":"137","307":"138","325":"139","315":"140","302":"141","338":"142","303":"143","306":"144","331":"145","329":"146","301":"147","337":"148","333":"149","335":"150","340":"151","334":"152","308":"153","327":"154","310":"155","312":"156","222":"157","086":"158","299":"159","298":"160","267":"161","270":"162","268":"163","252":"164","263":"165","253":"166","262":"167","257":"168","256":"169","255":"170","239":"171","254":"172","258":"173","201":"174","215":"175","206":"176","220":"177","217":"178","216":"179","219":"180","241":"181","240":"182","242":"183","223":"184","224":"185","225":"186","227":"187","309":"188","226":"189","228":"190","229":"191","243":"192","230":"193","311":"194","231":"195","244":"196","245":"197","246":"198","317":"199","247":"200","248":"201","249":"202","250":"203","232":"204","251":"205","233":"206","234":"207","259":"208","318":"209","235":"210","238":"211","237":"212","321":"213","260":"214","200":"215","261":"216","264":"217","190":"218","999":"9999","322":"219"});
+    const branchToStore = Object.freeze(Object.fromEntries(Object.entries(storeToBranch).map(([store, branch]) => [branch, store])));
+    // Depara CNPJ -> Loja/Filial (mesmo usado hoje no PROCV do Excel antes de importar
+    // o CSV bruto do LINX). Com isso o conciliador aplica o depara automaticamente,
+    // sem precisar de planilha tratada manualmente.
+    const cnpjToStoreBranch = Object.freeze({"63503007000146":{"store":"015","branch":"1"},"63503007000227":{"store":"024","branch":"2"},"63503007000308":{"store":"016","branch":"3"},"63503007000499":{"store":"018","branch":"4"},"63503007000570":{"store":"019","branch":"5"},"63503007000650":{"store":"021","branch":"6"},"63503007000731":{"store":"022","branch":"7"},"63503007000901":{"store":"017","branch":"8"},"63503007001118":{"store":"026","branch":"9"},"63503007001207":{"store":"023","branch":"10"},"63503007001380":{"store":"025","branch":"11"},"63503007001460":{"store":"020","branch":"12"},"63503007001541":{"store":"033","branch":"13"},"63503007001622":{"store":"027","branch":"14"},"63503007001703":{"store":"028","branch":"15"},"63503007001894":{"store":"029","branch":"16"},"63503007001975":{"store":"030","branch":"17"},"63503007002009":{"store":"031","branch":"18"},"63503007002190":{"store":"032","branch":"19"},"63503007002270":{"store":"901","branch":"20"},"63503007002351":{"store":"036","branch":"21"},"63503007002432":{"store":"034","branch":"22"},"63503007002513":{"store":"035","branch":"23"},"63503007002602":{"store":"037","branch":"24"},"63503007002785":{"store":"38","branch":"25"},"63503007002947":{"store":"40","branch":"26"},"63503007002866":{"store":"39","branch":"27"},"63503007003080":{"store":"41","branch":"28"},"63503007003161":{"store":"42","branch":"29"},"63503007003242":{"store":"43","branch":"30"},"63503007003323":{"store":"44","branch":"31"},"63503007003404":{"store":"45","branch":"32"},"63503007003595":{"store":"46","branch":"33"},"63503007003676":{"store":"47","branch":"34"},"63503007003757":{"store":"48","branch":"35"},"63503007003838":{"store":"49","branch":"36"},"63503007003919":{"store":"50","branch":"37"},"63503007004052":{"store":"51","branch":"38"},"63503007004133":{"store":"80","branch":"39"},"63503007004214":{"store":"82","branch":"40"},"63503007004303":{"store":"81","branch":"41"},"63503007004486":{"store":"064","branch":"42"},"63503007004567":{"store":"73","branch":"43"},"63503007004648":{"store":"72","branch":"44"},"63503007004729":{"store":"83","branch":"45"},"63503007004800":{"store":"066","branch":"46"},"63503007004990":{"store":"065","branch":"47"},"63503007005024":{"store":"117","branch":"48"},"63503007005105":{"store":"160","branch":"49"},"63503007005296":{"store":"163","branch":"50"},"63503007005377":{"store":"161","branch":"51"},"63503007005458":{"store":"85","branch":"52"},"63503007005539":{"store":"88","branch":"53"},"63503007005709":{"store":"87","branch":"55"},"63503007005881":{"store":"84","branch":"56"},"63503007005962":{"store":"143","branch":"57"},"63503007006004":{"store":"141","branch":"58"},"63503007006187":{"store":"145","branch":"59"},"63503007006268":{"store":"144","branch":"60"},"63503007006349":{"store":"76","branch":"61"},"63503007006420":{"store":"77","branch":"62"},"63503007006500":{"store":"74","branch":"63"},"63503007006691":{"store":"164","branch":"64"},"63503007006772":{"store":"123","branch":"65"},"63503007006853":{"store":"147","branch":"66"},"63503007006934":{"store":"149","branch":"67"},"63503007007078":{"store":"142","branch":"68"},"63503007007159":{"store":"148","branch":"69"},"63503007007230":{"store":"ado","branch":"70"},"63503007007310":{"store":"151","branch":"71"},"63503007007400":{"store":"75","branch":"72"},"63503007007582":{"store":"165","branch":"73"},"63503007007663":{"store":"162","branch":"74"},"63503007007744":{"store":"191","branch":"75"},"63503007007825":{"store":"78","branch":"76"},"63503007007906":{"store":"152","branch":"77"},"63503007008040":{"store":"158","branch":"78"},"63503007008120":{"store":"168","branch":"79"},"63503007008201":{"store":"166","branch":"80"},"63503007008392":{"store":"167","branch":"81"},"63503007008473":{"store":"176","branch":"82"},"63503007008554":{"store":"171","branch":"83"},"63503007008635":{"store":"079","branch":"84"},"63503007008716":{"store":"089","branch":"85"},"63503007008805":{"store":"150","branch":"86"},"63503007008988":{"store":"193","branch":"87"},"63503007009011":{"store":"170","branch":"88"},"63503007009100":{"store":"178","branch":"89"},"63503007009283":{"store":"177","branch":"90"},"63503007009364":{"store":"174","branch":"91"},"63503007009445":{"store":"172","branch":"92"},"63503007009526":{"store":"175","branch":"93"},"63503007009607":{"store":"90","branch":"94"},"63503007009798":{"store":"156","branch":"95"},"63503007009879":{"store":"157","branch":"96"},"63503007009950":{"store":"91","branch":"97"},"63503007010028":{"store":"180","branch":"98"},"63503007010109":{"store":"179","branch":"99"},"63503007010290":{"store":"173","branch":"100"},"63503007010370":{"store":"182","branch":"101"},"63503007010451":{"store":"186","branch":"102"},"63503007010532":{"store":"93","branch":"103"},"63503007010613":{"store":"92","branch":"104"},"63503007010702":{"store":"94","branch":"105"},"63503007010885":{"store":"95","branch":"106"},"63503007010966":{"store":"187","branch":"107"},"63503007011008":{"store":"184","branch":"108"},"63503007011180":{"store":"181","branch":"109"},"63503007011261":{"store":"lar","branch":"110"},"63503007011342":{"store":"189","branch":"111"},"63503007011423":{"store":"188","branch":"112"},"63503007011504":{"store":"183","branch":"113"},"63503007011695":{"store":"169","branch":"114"},"63503007011776":{"store":"205","branch":"115"},"63503007011857":{"store":"214","branch":"116"},"63503007011938":{"store":"213","branch":"117"},"63503007012071":{"store":"212","branch":"118"},"63503007012152":{"store":"211","branch":"119"},"63503007012233":{"store":"210","branch":"120"},"63503007012314":{"store":"207","branch":"121"},"63503007012403":{"store":"208","branch":"122"},"63503007012586":{"store":"204","branch":"123"},"63503007012667":{"store":"203","branch":"124"},"63503007012748":{"store":"202","branch":"125"},"63503007012829":{"store":"221","branch":"126"},"63503007012900":{"store":"300","branch":"127"},"63503007013043":{"store":"209","branch":"128"},"63503007013124":{"store":"236","branch":"129"},"63503007013205":{"store":"319","branch":"130"},"63503007013396":{"store":"218","branch":"131"},"63503007013477":{"store":"305","branch":"132"},"63503007013558":{"store":"314","branch":"133"},"63503007013639":{"store":"316","branch":"134"},"63503007013710":{"store":"320","branch":"135"},"63503007013809":{"store":"304","branch":"136"},"63503007013981":{"store":"313","branch":"137"},"63503007014015":{"store":"307","branch":"138"},"63503007014104":{"store":"325","branch":"139"},"63503007014287":{"store":"315","branch":"140"},"63503007014368":{"store":"302","branch":"141"},"63503007014449":{"store":"338","branch":"142"},"63503007014520":{"store":"303","branch":"143"},"63503007014600":{"store":"306","branch":"144"},"63503007014791":{"store":"331","branch":"145"},"63503007014872":{"store":"329","branch":"146"},"63503007014953":{"store":"301","branch":"147"},"63503007015097":{"store":"337","branch":"148"},"63503007015178":{"store":"333","branch":"149"},"63503007015259":{"store":"335","branch":"150"},"63503007015330":{"store":"340","branch":"151"},"63503007015410":{"store":"334","branch":"152"},"63503007015500":{"store":"308","branch":"153"},"63503007015682":{"store":"327","branch":"154"},"63503007015763":{"store":"310","branch":"155"},"63503007015844":{"store":"312","branch":"156"},"63503007015925":{"store":"222","branch":"157"},"63503007005610":{"store":"86","branch":"158"},"63503007016069":{"store":"299","branch":"159"},"63503007016140":{"store":"298","branch":"160"},"63503007016220":{"store":"267","branch":"161"},"63503007016301":{"store":"270","branch":"162"},"63503007016492":{"store":"268","branch":"163"},"63503007016573":{"store":"252","branch":"164"},"63503007016654":{"store":"263","branch":"165"},"63503007016735":{"store":"253","branch":"166"},"63503007016816":{"store":"262","branch":"167"},"63503007016905":{"store":"257","branch":"168"},"63503007017030":{"store":"256","branch":"169"},"63503007017111":{"store":"255","branch":"170"},"63503007017200":{"store":"239","branch":"171"},"63503007017383":{"store":"254","branch":"172"},"63503007017464":{"store":"258","branch":"173"},"63503007017545":{"store":"201","branch":"174"},"63503007017626":{"store":"215","branch":"175"},"63503007017707":{"store":"206","branch":"176"},"63503007017898":{"store":"220","branch":"177"},"63503007017979":{"store":"217","branch":"178"},"63503007018002":{"store":"216","branch":"179"},"63503007018193":{"store":"219","branch":"180"},"63503007018274":{"store":"241","branch":"181"},"63503007018355":{"store":"240","branch":"182"},"63503007018436":{"store":"242","branch":"183"},"63503007018517":{"store":"223","branch":"184"},"63503007018606":{"store":"224","branch":"185"},"63503007018789":{"store":"225","branch":"186"},"63503007018860":{"store":"227","branch":"187"},"63503007018940":{"store":"309","branch":"188"},"63503007019084":{"store":"226","branch":"189"},"63503007019165":{"store":"228","branch":"190"},"63503007019246":{"store":"229","branch":"191"},"63503007019327":{"store":"243","branch":"192"},"63503007019408":{"store":"230","branch":"193"},"63503007019599":{"store":"311","branch":"194"},"63503007019670":{"store":"231","branch":"195"},"63503007019750":{"store":"244","branch":"196"},"63503007019831":{"store":"245","branch":"197"},"63503007019912":{"store":"246","branch":"198"},"63503007020090":{"store":"317","branch":"199"},"63503007020171":{"store":"247","branch":"200"},"63503007020252":{"store":"248","branch":"201"},"63503007020333":{"store":"249","branch":"202"},"63503007020414":{"store":"250","branch":"203"},"63503007020503":{"store":"232","branch":"204"},"63503007020686":{"store":"251","branch":"205"},"63503007020767":{"store":"233","branch":"206"},"63503007020848":{"store":"234","branch":"207"},"63503007020929":{"store":"259","branch":"208"},"63503007021062":{"store":"318","branch":"209"},"63503007021143":{"store":"235","branch":"210"},"63503007021224":{"store":"238","branch":"211"},"63503007021305":{"store":"237","branch":"212"},"63503007021496":{"store":"321","branch":"213"},"63503007021577":{"store":"260","branch":"214"},"63503007021658":{"store":"200","branch":"215"},"63503007021739":{"store":"261","branch":"216"},"63503007021810":{"store":"264","branch":"217"},"63503007021909":{"store":"190","branch":"218"},"0":{"store":"999","branch":"9999"}});
+
+    function normalizeCnpj(value) {
+      const digits = String(value || '').replace(/\D/g, '');
+      return digits.replace(/^0+(?=\d)/, '');
+    }
+
+
+    function parseCsv(text, delimiterSetting) {
+      const delimiter = delimiterSetting === 'auto' ? detectDelimiter(text) : delimiterSetting;
+      const rows = [];
+      let row = [], cell = '', inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i], next = text[i + 1];
+        if (char === '"' && inQuotes && next === '"') {
+          cell += '"';
+          i++;
+        } else if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === delimiter && !inQuotes) {
+          row.push(cell);
+          cell = '';
+        } else if ((char === '\n' || char === '\r') && !inQuotes) {
+          if (char === '\r' && next === '\n') i++;
+          row.push(cell);
+          if (row.some(v => v.trim() !== '')) rows.push(row);
+          row = [];
+          cell = '';
+        } else {
+          cell += char;
+        }
+      }
+      row.push(cell);
+      if (row.some(v => v.trim() !== '')) rows.push(row);
+      const headers = (rows.shift() || []).map(h => h.trim());
+      const objects = rows.map(values => {
+        const item = {};
+        headers.forEach((header, index) => item[header] = (values[index] || '').trim());
+        return item;
+      });
+      return { headers, rows: objects };
+    }
+
+    function detectDelimiter(text) {
+      const firstLine = text.split(/\r?\n/).find(Boolean) || '';
+      return (firstLine.match(/;/g) || []).length >= (firstLine.match(/,/g) || []).length ? ';' : ',';
+    }
+
+    function findColumn(headers, preferred) {
+      return headers.find(h => preferred.some(p => normalizeText(h).includes(p))) || '';
+    }
+
+    function setupColumns(kind, data) {
+      if (kind === 'pix') {
+        data.columns = {
+          date: findColumn(data.headers, ['data', 'dt', 'movimento', 'pagamento', 'credito']),
+          value: findColumn(data.headers, ['valor', 'vlr', 'total', 'liquido']),
+          id: findColumn(data.headers, ['txid', 'endtoendid', 'e2eid', 'nsu', 'id', 'documento', 'referencia', 'chave']),
+          branch: findColumn(data.headers, ['loja', 'filial', 'empresa', 'codfilial', 'unidade']),
+          status: findColumn(data.headers, ['statusqr', 'status', 'situacao']),
+          cnpj: findColumn(data.headers, ['cnpj'])
+        };
+        updateMapInfo('pixMapInfo', data.columns, {
+          date: 'Data',
+          value: 'Valor Pix',
+          id: 'Identificador Pix',
+        branch: 'Loja / Filial (coluna direta, se houver)',
+        status: 'Status QR (somente Confirmado)',
+        cnpj: 'CNPJ (depara automatico p/ Loja/Filial)'
+        });
+        return;
+      }
+
+      // Colunas do ERP (LINX) informadas pelo usuario: AK = "NF Saida" (id do cupom),
+      // AJ = "Serie NFS" (PDV) e "Emissao" = data de entrada. Essas correspondencias
+      // exatas tem prioridade sobre a deteccao generica por palavras-chave, para
+      // nao pegar por engano outra coluna parecida da planilha.
+      data.columns = {
+        date: data.headers.find(h => normalizeText(h) === 'emissao')
+          || findColumn(data.headers, ['emissao'])
+          || findColumn(data.headers, ['data', 'dt', 'venda']),
+        value: findColumn(data.headers, ['valor', 'vlr', 'total', 'liquido']),
+        id: data.headers.find(h => normalizeText(h) === 'nfsaida')
+          || data.headers.find(h => normalizeText(h) === 'titulo')
+          || findColumn(data.headers, ['titulo', 'nfsaida', 'cupom', 'coo', 'documento', 'codigo', 'nsu', 'referencia']),
+        branch: findColumn(data.headers, ['loja', 'filial', 'empresa', 'codfilial', 'unidade']),
+        pdv: data.headers.find(h => normalizeText(h) === 'serienfs')
+          || findColumn(data.headers, ['serienfs', 'pdv', 'caixa', 'terminal', 'ecf']),
+        cnpj: findColumn(data.headers, ['cnpj'])
+      };
+      updateMapInfo('cupomMapInfo', data.columns, {
+        date: 'Data de Entrada (Emissao)',
+        value: 'Valor ERP',
+        id: 'Cupom / NF Saida',
+        branch: 'Filial (coluna direta, se houver)',
+        pdv: 'PDV (Serie NFS)',
+        cnpj: 'CNPJ (depara automatico p/ Loja/Filial)'
+      });
+    }
+
+    function updateMapInfo(elementId, columns, labels) {
+      const element = document.getElementById(elementId);
+      const lines = Object.keys(labels).map(key => {
+        const value = columns[key] || 'nao encontrada';
+        return `<span><strong>${labels[key]}:</strong> ${escapeHtml(value)}</span>`;
+      });
+      element.innerHTML = lines.join('');
+    }
+
+    async function loadFile(kind, file) {
+      const text = await readTextAutoEncoding(file);
+      state[kind] = parseCsv(text, els.delimiter.value);
+      setupColumns(kind, state[kind]);
+      if (kind === 'pix' && state[kind].columns.status) {
+        const total = state[kind].rows.length;
+        state[kind].rows = state[kind].rows.filter(row => normalizeText(row[state[kind].columns.status]) === 'confirmado');
+        document.getElementById('pixInfo').textContent = `${state[kind].rows.length} confirmadas de ${total}`;
+      } else {
+        document.getElementById(`${kind}Info`).textContent = `${state[kind].rows.length} linhas`;
+      }
+    }
+
+    // Muitos exports do LINX saem em ANSI/Latin-1 (Windows-1252), nao em UTF-8.
+    // Lendo como UTF-8 direto, letras acentuadas como "Emissao", "Serie" e
+    // "NF Saida" ficam corrompidas e o sistema nao reconhece essas colunas.
+    // Aqui decodifica como UTF-8 e, se detectar corrupcao (caractere de
+    // substituicao "\ufffd"), refaz a leitura como Windows-1252.
+    async function readTextAutoEncoding(file) {
+      const buffer = await file.arrayBuffer();
+      const utf8Text = new TextDecoder('utf-8', { fatal: false }).decode(buffer);
+      if (utf8Text.includes('\ufffd')) {
+        return new TextDecoder('windows-1252').decode(buffer);
+      }
+      return utf8Text;
+    }
+
+    function normalizeText(value) {
+      return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\W+/g, '');
+    }
+
+    function getStoreBranchInfo(value, columnName = '') {
+      const raw = String(value || '').trim();
+      if (!raw) return { store: '', branch: '' };
+      const source = normalizeText(columnName);
+      const isBranchColumn = source.includes('filial') && !source.includes('loja');
+      const isStoreColumn = source.includes('loja');
+      const digitGroups = raw.match(/\d+/g) || [];
+      const compactDigits = raw.replace(/\D/g, '');
+      const candidates = [raw, compactDigits, ...digitGroups]
+        .map(candidate => String(candidate || '').trim())
+        .filter(Boolean)
+        .flatMap(candidate => {
+          const withoutZeros = String(Number(candidate));
+          return [candidate, candidate.padStart(3, '0'), withoutZeros];
+        });
+      for (const candidate of candidates) {
+        if (!isBranchColumn && storeToBranch[candidate]) {
+          return { store: candidate, branch: storeToBranch[candidate] };
+        }
+        if (!isStoreColumn && branchToStore[candidate]) return { store: branchToStore[candidate], branch: candidate };
+      }
+      return { store: raw, branch: raw };
+    }
+
+    function parseMoney(value) {
+      const raw = String(value || '').replace(/[^\d,.-]/g, '').trim();
+      if (!raw) return 0;
+      const lastComma = raw.lastIndexOf(',');
+      const lastDot = raw.lastIndexOf('.');
+      if (lastComma > lastDot) return Number(raw.replace(/\./g, '').replace(',', '.')) || 0;
+      return Number(raw.replace(/,/g, '')) || 0;
+    }
+
+    function parseDate(value) {
+      const raw = String(value || '').trim();
+      const br = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+      if (br) {
+        const year = br[3].length === 2 ? `20${br[3]}` : br[3];
+        return new Date(Number(year), Number(br[2]) - 1, Number(br[1]));
+      }
+      const iso = new Date(raw);
+      return Number.isNaN(iso.getTime()) ? null : iso;
+    }
+
+    function daysBetween(a, b) {
+      if (!a || !b) return 999999;
+      return Math.abs(a.getTime() - b.getTime()) / 86400000;
+    }
+
+    function prepare(row, columns) {
+      let storeRaw = columns.branch ? getStoreBranchInfo(row[columns.branch] || '', columns.branch).store : '';
+      let branchRaw = columns.branch ? getStoreBranchInfo(row[columns.branch] || '', columns.branch).branch : '';
+      // CSV bruto do LINX nao tem coluna de Loja/Filial: usa o CNPJ para achar
+      // automaticamente no mesmo depara que antes era feito via PROCV no Excel.
+      if ((!storeRaw && !branchRaw) && columns.cnpj) {
+        const info = cnpjToStoreBranch[normalizeCnpj(row[columns.cnpj])];
+        if (info) {
+          storeRaw = info.store;
+          branchRaw = info.branch;
+        }
+      }
+      return {
+        raw: row,
+        dateRaw: row[columns.date] || '',
+        valueRaw: row[columns.value] || '',
+        idRaw: row[columns.id] || '',
+        storeRaw,
+        branchRaw,
+        pdvRaw: columns.pdv ? row[columns.pdv] || '' : '',
+        date: parseDate(row[columns.date]),
+        value: parseMoney(row[columns.value]),
+        id: normalizeText(row[columns.id])
+      };
+    }
+
+    function reconcile() {
+      if (!state.pix.rows.length || !state.cupom.rows.length) {
+        alert('Carregue o Extrato Pix e o Arquivo Vendas (ERP) antes de conciliar.');
+        return;
+      }
+      const pixCols = state.pix.columns || {};
+      const cupomCols = state.cupom.columns || {};
+      const missing = [];
+      if (!pixCols.date) missing.push('Data do Extrato Pix');
+      if (!pixCols.value) missing.push('Valor Pix');
+      if (!pixCols.status) missing.push('Status QR do Extrato Pix');
+      if (!cupomCols.date) missing.push('Data da venda ERP');
+      if (!cupomCols.value) missing.push('Valor venda ERP');
+      if (!cupomCols.id) missing.push('Cupom / NF Saida ERP');
+      if (missing.length) {
+        alert(`Nao foi possivel identificar as colunas obrigatorias:\n\n${missing.join('\n')}`);
+        return;
+      }
+      const dateTolerance = Number(document.getElementById('dateTolerance').value) || 0;
+      const valueTolerance = Number(document.getElementById('valueTolerance').value) || 0;
+      const strictBranch = document.getElementById('strictBranch').checked;
+      const pixRows = state.pix.rows.map(row => prepare(row, pixCols));
+      const cupomRows = state.cupom.rows.map(row => prepare(row, cupomCols));
+
+      // 1) Monta TODOS os pares validos (pix x cupom) dentro da tolerancia,
+      //    em vez de decidir o match linha a linha (o que causava vendas erradas
+      //    quando um Pix "roubava" o cupom certo de outro Pix por ordem de leitura).
+      const candidates = [];
+      pixRows.forEach((pix, pixIndex) => {
+        cupomRows.forEach((cupom, cupomIndex) => {
+          const valueDiff = Math.abs(pix.value - cupom.value);
+          const dateDiff = daysBetween(pix.date, cupom.date);
+          if (valueDiff > valueTolerance || dateDiff > dateTolerance) return;
+
+          // Mesma loja/filial: quando os dois lados tem essa informacao e o
+          // modo estrito esta ligado, filial diferente NUNCA pode casar,
+          // mesmo com valor e data batendo. Essa era a principal causa de
+          // "venda errada": duas filiais diferentes com a mesma venda no
+          // mesmo dia acabavam sendo trocadas entre si.
+          const bothHaveBranch = pix.branchRaw && cupom.branchRaw;
+          const sameBranch = !bothHaveBranch || pix.branchRaw === cupom.branchRaw;
+          if (strictBranch && bothHaveBranch && !sameBranch) return;
+
+          const idMatch = pix.id && cupom.id && (pix.id.includes(cupom.id) || cupom.id.includes(pix.id));
+          // Score menor = par melhor. Prioridade: 1) identificador batendo,
+          // 2) mesma filial, 3) menor diferenca de data, 4) menor diferenca de valor.
+          const score = (idMatch ? 0 : 100000)
+            + (sameBranch ? 0 : 50000)
+            + dateDiff * 100
+            + valueDiff;
+          candidates.push({ pixIndex, cupomIndex, valueDiff, dateDiff, score });
+        });
+      });
+
+      // 2) Ordena todos os pares possiveis do melhor para o pior e vai
+      //    confirmando o primeiro disponivel. Isso resolve empates/disputas
+      //    global, em vez de deixar o resultado depender da ordem das linhas
+      //    no CSV (que era a segunda causa de venda errada).
+      candidates.sort((a, b) => a.score - b.score);
+      const usedPix = new Set();
+      const usedCupom = new Set();
+      const matchByPix = new Map();
+      candidates.forEach(candidate => {
+        if (usedPix.has(candidate.pixIndex) || usedCupom.has(candidate.cupomIndex)) return;
+        usedPix.add(candidate.pixIndex);
+        usedCupom.add(candidate.cupomIndex);
+        matchByPix.set(candidate.pixIndex, candidate);
+      });
+
+      const matched = [];
+      const pixOnly = [];
+      pixRows.forEach((pix, pixIndex) => {
+        const candidate = matchByPix.get(pixIndex);
+        if (candidate) {
+          const cupom = cupomRows[candidate.cupomIndex];
+          matched.push(formatResult('Conciliado', pix, cupom, candidate.valueDiff, candidate.dateDiff));
+        } else {
+          pixOnly.push(formatResult('Pix sem cupom', pix, null, '', ''));
+        }
+      });
+
+      const cupomOnly = cupomRows
+        .filter((_, index) => !usedCupom.has(index))
+        .map(cupom => formatResult('Cupom sem Pix', null, cupom, '', ''));
+
+      const returnFile = cupomOnly.map(row => ({
+        lojaCupom: row.lojaCupom,
+        filialCupom: row.filialCupom,
+        cupomId: row.cupomId,
+        pdvVenda: row.pdvVenda,
+        cupomData: row.cupomData,
+        cupomValor: row.cupomValor,
+        motivo: 'Venda nao conciliada com extrato Pix'
+      }));
+
+      state.results = {
+        matched,
+        pixOnly,
+        cupomOnly,
+        returnFile,
+        all: [...matched, ...pixOnly, ...cupomOnly]
+      };
+      updateMetrics();
+      renderTable(state.tab);
+    }
+
+    function formatResult(status, pix, cupom, valueDiff, dateDiff) {
+      return {
+        status,
+        lojaCupom: cupom ? cupom.storeRaw : (pix ? pix.storeRaw : ''),
+        filialCupom: cupom ? cupom.branchRaw : (pix ? pix.branchRaw : ''),
+        pdvVenda: cupom ? cupom.pdvRaw : '',
+        cupomId: cupom ? cupom.idRaw : '',
+        cupomData: cupom ? cupom.dateRaw : '',
+        cupomValor: cupom ? formatCurrency(cupom.value) : '',
+        pixData: pix ? pix.dateRaw : '',
+        pixValor: pix ? formatCurrency(pix.value) : '',
+        pixId: pix ? pix.idRaw : '',
+        diferencaValor: valueDiff === '' ? '' : formatCurrency(Number(valueDiff)),
+        diferencaDias: dateDiff === '' ? '' : Number(dateDiff).toFixed(0)
+      };
+    }
+
+    function formatCurrency(value) {
+      return Number(value || 0).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+    }
+
+    function updateMetrics() {
+      document.getElementById('mMatched').textContent = state.results.matched.length;
+      document.getElementById('mPixOnly').textContent = state.results.pixOnly.length;
+      document.getElementById('mCupomOnly').textContent = state.results.cupomOnly.length;
+      document.getElementById('mDiff').textContent = state.results.matched.filter(r => parseMoney(r.diferencaValor) > 0).length;
+    }
+
+    function renderTable(tab) {
+      state.tab = tab;
+      document.querySelectorAll('.tabs button').forEach(button => button.classList.toggle('active', button.dataset.tab === tab));
+      const rows = state.results[tab] || [];
+      const headers = headersFor(tab);
+      els.resultHead.innerHTML = `<tr>${headers.map(h => `<th>${labelFor(h)}</th>`).join('')}</tr>`;
+      els.resultBody.innerHTML = rows.map(row => `<tr>${headers.map(h => `<td class="${classFor(h, row[h])}">${escapeHtml(row[h])}</td>`).join('')}</tr>`).join('');
+    }
+
+    function headersFor(kind) {
+      if (kind === 'returnFile') return returnHeaders;
+      if (kind === 'cupomOnly') return cupomOnlyHeaders;
+      if (kind === 'pixOnly') return pixOnlyHeaders;
+      return tableHeaders;
+    }
+
+    function labelFor(key) {
+      return {
+        status: 'Status',
+        lojaCupom: 'Loja',
+        filialCupom: 'Filial',
+        pdvVenda: 'PDV',
+        cupomId: 'Cupom / NF Saida',
+        cupomData: 'Data cupom',
+        cupomValor: 'Valor venda ERP (R$)',
+        pixData: 'Data Pix',
+        pixValor: 'Valor Pix (R$)',
+        pixId: 'ID Pix',
+        diferencaValor: 'Dif. valor (R$)',
+        diferencaDias: 'Dif. dias',
+        motivo: 'Motivo'
+      }[key] || key;
+    }
+
+    function classFor(key, value) {
+      if (key !== 'status') return '';
+      if (value === 'Conciliado') return 'status-ok';
+      if (value === 'Pix sem cupom') return 'status-bad';
+      return 'status-warn';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    }
+
+    function exportCsv(kind) {
+      const rows = state.results[kind] || [];
+      const headers = headersFor(kind);
+      const csv = [headers.map(labelFor).join(';')]
+        .concat(rows.map(row => headers.map(h => csvCell(row[h])).join(';')))
+        .join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileNameFor(kind);
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function fileNameFor(kind) {
+      if (kind === 'returnFile') return 'retorno-vendas-nao-conciliadas.csv';
+      if (kind === 'cupomOnly') return 'cupom-sem-pix.csv';
+      return `conciliacao-${kind}.csv`;
+    }
+
+    function csvCell(value) {
+      const text = String(value ?? '');
+      return /[;"\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    }
+
+    els.pixFile.addEventListener('change', event => event.target.files[0] && loadFile('pix', event.target.files[0]));
+    els.cupomFile.addEventListener('change', event => event.target.files[0] && loadFile('cupom', event.target.files[0]));
+    els.reconcileBtn.addEventListener('click', reconcile);
+    document.querySelectorAll('.tabs button').forEach(button => button.addEventListener('click', () => renderTable(button.dataset.tab)));
+    document.querySelectorAll('[data-export]').forEach(button => button.addEventListener('click', () => exportCsv(button.dataset.export)));
+    renderTable('matched');
+  </script>
+</body>
+</html>
