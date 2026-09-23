@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Conciliador Pix BB</title>
+  <title>PixBB · Conciliação Pix</title>
   <style>
     :root {
       color-scheme: light;
@@ -287,46 +287,81 @@
       main, header { padding: 14px; }
       .settings { grid-template-columns: 1fr; }
     }
-  </style>
+  
+/* PixBB — apresentação */
+:root{--bg:#f3f6f7;--ink:#213b40;--muted:#728187;--line:#e0e8e9;--accent:#087d70;--accent-dark:#066358}
+body{font-family:"Segoe UI",Arial,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+header{background:linear-gradient(115deg,#073f3d,#08685e);border:0;padding:30px 32px;color:#fff;position:relative;overflow:hidden}
+header:after{content:"";position:absolute;width:340px;height:340px;border:1px solid #ffffff10;border-radius:50%;right:9%;top:-230px;pointer-events:none}
+.topbar{max-width:1500px;position:relative;z-index:1}.brand{display:flex;gap:18px;align-items:center}.brand-mark{display:grid;place-items:center;width:58px;height:58px;background:#ffffff10;border:1px solid #ffffff25;border-radius:17px}.brand-mark svg{width:37px;height:37px;color:#80ead2}.eyebrow{font-size:10px;letter-spacing:2.1px;color:#a5d2c9;font-weight:600;margin-bottom:5px}h1{display:flex;align-items:center;font-size:30px;letter-spacing:-1px;font-weight:700}h1>span:first-child{color:#84e6c9}h1 small{font-size:19px;letter-spacing:-.3px;font-weight:500}.brand-divider{height:24px;width:1px;background:#ffffff35;margin:0 17px}header p{color:#b3d5ce;font-size:13px;margin-top:5px}.local-badge{display:flex;align-items:center;gap:8px;padding:9px 13px;border:1px solid #ffffff25;border-radius:30px;font-size:12px;color:#d5eee8;white-space:nowrap}.local-badge i{height:6px;width:6px;background:#87e6ba;border-radius:50%}
+main{max-width:1564px;padding:26px 32px}.layout{grid-template-columns:330px minmax(0,1fr);gap:24px}.stack{gap:18px;min-width:0}.panel{border-radius:14px;padding:20px;box-shadow:0 3px 12px #163f3903}.panel h2{font-size:14px;font-weight:650;display:flex;align-items:center;gap:8px}.section-title{flex-wrap:wrap;gap:8px;margin-bottom:16px}.step{font-size:10px;background:#eaf5f1;color:#167465;display:inline-grid;place-items:center;width:25px;height:25px;border-radius:7px}.badge{font-size:10px;background:#f0f5f5;font-weight:600;white-space:normal}.file-summary[hidden]{display:none!important}
+input,select,button{border-radius:8px;font-size:12px;min-height:40px}input,select{color:var(--ink);min-width:0}input[type=file]{padding:12px 9px;background:#f8fbfa;border:1px dashed #c5d9d3;font-size:11px;min-height:64px}input[type=file]::file-selector-button{font:600 11px "Segoe UI",sans-serif;border:0;border-radius:6px;padding:9px 10px;background:#e0eee9;color:#176558;margin-right:8px;cursor:pointer}button{transition:background .15s,box-shadow .15s;font-weight:600}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #40b9a3;outline-offset:3px}#reconcileBtn{min-height:44px;box-shadow:0 4px 9px #087d701b;font-size:13px}.hint{line-height:1.65;font-size:11px}.settings{gap:8px}
+.summary{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.metric{--tone:#087d70;--tint:#e5f5ef;padding:17px 18px 14px;border-radius:14px;box-shadow:0 3px 12px #163f3903;min-width:0}.metric.amber{--tone:#aa7218;--tint:#fff5df}.metric.blue{--tone:#3c74a0;--tint:#ecf4fc}.metric.rose{--tone:#b75b65;--tint:#fbedef}.metric-heading{display:flex;align-items:center;justify-content:space-between;gap:7px;min-height:32px}.metric-heading span{font-size:11px;font-weight:600;color:#627779}.metric-icon{display:grid;place-items:center;flex:0 0 30px;height:30px;background:var(--tint);color:var(--tone);border-radius:9px}.metric-icon svg{width:19px;height:19px}.metric strong{font-size:32px;font-weight:650;letter-spacing:-1px;margin:12px 0 17px;font-variant-numeric:tabular-nums}.metric-line{height:3px;border-radius:3px;background:var(--tint)}.metric-line:before{content:"";display:block;height:3px;width:24px;border-radius:3px;background:var(--tone)}
+.actions{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.actions button{font-size:11px;min-height:42px}.actions button.secondary{border-color:#dce8e4;background:#f7faf9;color:#38615a}.actions button.secondary:hover{background:#e6f3ee}.actions button.return{background:#087d70;color:white;border-color:#087d70}.actions button.return:hover{background:#066358}.tabs{gap:5px;padding:5px;background:#e9eff0;border-radius:11px;width:fit-content;max-width:100%}.tabs button{border:0;background:transparent;font-size:12px;min-height:35px;color:#627779;padding:8px 13px}.tabs button.active{background:#fff;color:#08695f;box-shadow:0 2px 5px #1c494416}.tabs button:hover{background:#f6faf9}.table-wrap{border-radius:12px}th{background:#eaf2ef;color:#3d625c;padding:13px 12px;font-weight:600}td{padding:12px}tbody tr:nth-child(even){background:#fbfdfc}
+@media(min-width:1101px) and (max-width:1250px){.layout{grid-template-columns:300px minmax(0,1fr)}.summary{gap:8px}.metric{padding:13px}.metric-heading{flex-wrap:wrap}.actions{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}.layout>aside{grid-template-columns:1fr 1fr}.layout>aside>section:last-child{grid-column:1/-1}.summary{grid-template-columns:repeat(4,minmax(0,1fr))}.actions{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:760px){header{padding:23px 18px}.topbar{flex-direction:row;align-items:center}.brand-mark{width:44px;height:44px;border-radius:12px}.brand-mark svg{width:30px;height:30px}.brand{gap:12px}h1{font-size:26px}h1 small{font-size:14px}.brand-divider{margin:0 10px}.local-badge{display:none}.eyebrow{font-size:9px}main{padding:18px 14px}.layout>aside{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.actions{grid-template-columns:repeat(2,minmax(0,1fr))}.actions button:last-child{grid-column:1/-1}.settings{grid-template-columns:repeat(3,minmax(0,1fr))}.metric-heading span{font-size:12px}.tabs{width:100%}.tabs button{flex:1 1 auto}.panel{padding:18px}}
+
+/* Mais contraste e definição na tipografia, preservando a composição. */
+:root{--ink:#142d32;--muted:#4b6065}
+body{-webkit-font-smoothing:auto}
+.panel h2{font-size:15px;font-weight:700;color:#173c39}
+.metric-heading span{font-size:13px;font-weight:700;color:#344f53;line-height:1.35}
+.metric strong{font-size:36px;font-weight:750;letter-spacing:-.5px;color:#102f33;line-height:1.15}
+.metric-heading{min-width:0}.metric-heading span{min-width:0}
+label{font-size:13px;color:#2c4449}
+input,select{font-size:13px;font-weight:500;color:#18383b}
+input[type=file]{font-size:12px;color:#294a49}
+input[type=file]::file-selector-button{font-size:12px;font-weight:700;color:#105449}
+.badge{font-size:11px;font-weight:700;color:#425d61}
+.step{font-size:11px;font-weight:750;color:#105d50}
+button,.actions button,.tabs button{font-size:13px;font-weight:700;line-height:1.35}
+.actions button.secondary{color:#204e45}.tabs button{color:#38565a}.tabs button.active{color:#00584d}
+#reconcileBtn{font-size:14px;font-weight:700}
+.hint{font-size:12px;color:#4b6065;line-height:1.6}
+header p{font-size:14px;color:#d7eee7}.eyebrow{color:#c6e5dc;font-weight:700}.local-badge{color:#e4f6ef;font-weight:600}
+h1 small{font-weight:600}
+table{font-size:14px;font-variant-numeric:tabular-nums}th{font-size:13px;font-weight:700;color:#284e44}td{color:#213d42;font-weight:500}
+@media(max-width:760px){.metric strong{font-size:34px}.metric-heading span{font-size:13px}.actions button,.tabs button{font-size:13px}}
+/* Cabeçalho sempre visível durante a rolagem da página. */
+body > header{position:sticky;top:0;z-index:100;box-shadow:0 3px 12px #073f3d18}
+/* Cabeçalho compacto, mantendo a identidade e a posição fixa. */
+body > header{padding:20px 32px}
+.brand-mark{width:50px;height:50px;border-radius:14px}
+.brand-mark svg{width:33px;height:33px}
+@media(max-width:760px){body > header{padding:16px 18px}.brand-mark{width:44px;height:44px;border-radius:12px}.brand-mark svg{width:30px;height:30px}}
+</style>
 </head>
 <body>
-  <header>
-    <div class="topbar">
-      <div>
-        <h1>Conciliador Pix CSV</h1>
-        <p>Extrato Pix x cupom, com retorno das vendas nao conciliadas por filial, cupom e PDV.</p>
-      </div>
-      <span class="badge">CSV local</span>
-    </div>
-  </header>
+  <header><div class="topbar"><div class="brand"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 9 9-9 9-9-9Z"/><path d="m7 12 3 3 7-7"/></svg></div><div><div class="eyebrow">GESTÃO FINANCEIRA</div><h1>Pix<span>BB</span><span class="brand-divider"></span><small>Conciliação Pix</small></h1><p>Controle e clareza em cada transação.</p></div></div><span class="local-badge"><i></i> Ambiente local</span></div></header>
 
   <main>
     <div class="layout">
       <aside class="stack">
         <section class="panel">
           <div class="section-title">
-            <h2>Extrato Pix</h2>
+            <h2><span class="step">01</span> Extrato Pix</h2>
             <span class="badge" id="pixInfo">0 linhas</span>
           </div>
-          <input id="pixFile" type="file" accept=".csv,text/csv">
-          <div class="file-summary" id="pixMapInfo">
+          <input id="pixFile" aria-label="Selecionar extrato Pix CSV" type="file" accept=".csv,text/csv">
+          <div class="file-summary" id="pixMapInfo" hidden>
             <span><strong>Configuracao:</strong> data, valor Pix, identificador e filial serao detectados automaticamente.</span>
           </div>
         </section>
 
         <section class="panel">
           <div class="section-title">
-            <h2>Arquivo Vendas (ERP)</h2>
+            <h2><span class="step">02</span> Vendas ERP</h2>
             <span class="badge" id="cupomInfo">0 linhas</span>
           </div>
-          <input id="cupomFile" type="file" accept=".csv,text/csv">
-          <div class="file-summary" id="cupomMapInfo">
+          <input id="cupomFile" aria-label="Selecionar vendas ERP CSV" type="file" accept=".csv,text/csv">
+          <div class="file-summary" id="cupomMapInfo" hidden>
             <span><strong>Configuracao:</strong> data da venda, valor ERP, cupom, filial e PDV serao detectados automaticamente.</span>
           </div>
         </section>
 
         <section class="panel">
-          <h2>Regras</h2>
+          <h2>Configurar conciliação</h2>
           <div class="settings">
             <div>
               <label for="dateTolerance">Dias</label>
@@ -355,26 +390,21 @@
       </aside>
 
       <section class="stack">
-        <div class="summary">
-          <div class="metric"><strong id="mMatched">0</strong><span>Conciliados</span></div>
-          <div class="metric"><strong id="mPixOnly">0</strong><span>Pix sem cupom</span></div>
-          <div class="metric"><strong id="mCupomOnly">0</strong><span>Cupom sem Pix</span></div>
-          <div class="metric"><strong id="mDiff">0</strong><span>Diferencas</span></div>
-        </div>
+        <div class="summary" aria-label="Resumo da conciliação"><div class="metric good"><div class="metric-heading"><span>Conciliados</span><div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 12 4 4 8-8"/></svg></div></div><strong id="mMatched">0</strong><div class="metric-line"></div></div><div class="metric amber"><div class="metric-heading"><span>Pix sem cupom</span><div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5m0 3h.01"/><circle cx="12" cy="12" r="9"/></svg></div></div><strong id="mPixOnly">0</strong><div class="metric-line"></div></div><div class="metric blue"><div class="metric-heading"><span>Cupom sem Pix</span><div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z M9 8h6m-6 4h6"/></svg></div></div><strong id="mCupomOnly">0</strong><div class="metric-line"></div></div><div class="metric rose"><div class="metric-heading"><span>Diferenças</span><div class="metric-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h16m-4-4 4 4-4 4M20 16H4m4-4-4 4 4 4"/></svg></div></div><strong id="mDiff">0</strong><div class="metric-line"></div></div></div>
 
         <div class="panel">
           <div class="section-title">
-            <h2>Arquivos de saida</h2>
-            <span class="badge">Exportacao CSV</span>
+            <h2>Exportar resultados</h2>
+            <span class="badge">CSV</span>
           </div>
           <div class="actions">
             <button class="secondary" data-export="matched">Conciliados</button>
             <button class="secondary" data-export="pixOnly">Pix sem cupom</button>
             <button class="secondary" data-export="cupomOnly">Cupom sem Pix</button>
             <button class="secondary" data-export="all">Tudo</button>
-            <button class="return" data-export="returnFile">Arquivo retorno</button>
+            <button class="return" title="Exportar vendas não conciliadas com filial, cupom, PDV, data, valor e motivo" data-export="returnFile">Arquivo retorno</button>
           </div>
-          <p class="hint">O arquivo retorno contem apenas as vendas de cupom nao conciliadas, com filial, cupom, PDV, data, valor e motivo.</p>
+          
         </div>
 
         <div class="tabs">
